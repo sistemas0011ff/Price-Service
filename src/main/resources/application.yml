@@ -1,0 +1,22 @@
+management:
+  health:
+    livenessstate:
+      enabled: true  
+    readinessstate:
+      enabled: true 
+  endpoint:
+    health:
+      show-details: always 
+
+spring:
+  profiles:
+    active: local  
+  application:
+    name: price-service 
+  main:
+    banner-mode: off  
+
+server:
+  port: 8086  
+  servlet:
+    context-path: /zara/services/ecomerce/v1/ 
