@@ -6,11 +6,13 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
+
     @Bean
-    GroupedOpenApi publicApi() { 
-        return GroupedOpenApi.builder() 
-                .group("springshop-public")
-                .pathsToMatch("/api/**")
-                .build(); 
+    public GroupedOpenApi publicApi() {
+        return GroupedOpenApi.builder()
+            .group("springshop-public")
+            .pathsToMatch("/api/**")
+            .build();
     }
 }
+

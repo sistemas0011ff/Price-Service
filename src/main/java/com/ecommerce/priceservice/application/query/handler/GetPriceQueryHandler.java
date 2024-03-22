@@ -7,8 +7,8 @@ import com.ecommerce.priceservice.domain.dto.PriceDomainDTO;
 import com.ecommerce.priceservice.shared.application.query.IQueryHandler;
 import org.modelmapper.ModelMapper; 
 import org.springframework.stereotype.Component;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.List; 
 
 @Component
 public class GetPriceQueryHandler implements IQueryHandler<GetPriceQuery, List<PriceDTO>> {
@@ -30,13 +30,11 @@ public class GetPriceQueryHandler implements IQueryHandler<GetPriceQuery, List<P
             query.getProductId(),
             query.getBrandId()
         );
+ 
+        PriceDTO highestPriorityPrice = priceDomainDTOList.isEmpty() ? null : modelMapper.map(priceDomainDTOList.get(0), PriceDTO.class);
 
-        List<PriceDTO> result = priceDomainDTOList.stream()
-            .map(domainDto -> modelMapper.map(domainDto, PriceDTO.class))
-            .collect(Collectors.toList());
-
-        System.out.println("[GetPriceQueryHandler] Exiting handle method with result: " + result);
-        return result;
+        System.out.println("[GetPriceQueryHandler] Exiting handle method");
+        return highestPriorityPrice == null ? Collections.emptyList() : Collections.singletonList(highestPriorityPrice);
     }
     
     @Override

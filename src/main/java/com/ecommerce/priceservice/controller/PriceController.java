@@ -32,26 +32,26 @@ public class PriceController {
     @Operation(summary = "Get applicable prices for a product on a specific date", description = "Provides all applicable prices of a product for the given brand and date")
     @GetMapping("/prices/{date}/{productId}/{brandId}")
     public ResponseEntity<GeneralResponseDTO<List<PriceDTO>>> getPrices(
-            @Parameter(description = "Date for the price application in yyyy-MM-ddTHH:mm:ss format", required = true, schema = @Schema(type = "string", format = "date-time")) @PathVariable String date,
-            @Parameter(description = "ID of the product for which prices are requested", required = true) @PathVariable long productId,
-            @Parameter(description = "ID of the brand of the product", required = true) @PathVariable long brandId) {
+            @Parameter(description = "Date for the price application in yyyy-MM-ddTHH:mm:ss format", required = true, schema = @Schema(type = "string", format = "date-time")) @PathVariable("date") String dateStr,
+            @Parameter(description = "ID of the product for which prices are requested", required = true) @PathVariable("productId") long productId,
+            @Parameter(description = "ID of the brand of the product", required = true) @PathVariable("brandId") long brandId) {
         
         try {
-            LocalDateTime applicationDate = LocalDateTime.parse(date, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            LocalDateTime applicationDate = LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             PriceResponse priceResponse = priceService.getPrice(applicationDate, productId, brandId);
 
             GeneralResponseDTO<List<PriceDTO>> responseDTO = GeneralResponseDTO.<List<PriceDTO>>builder()
-                    .codigo("200")  
+                    .codigo("200")
                     .message(priceResponse.getMessage())
                     .data(priceResponse.getPrices())
                     .build();
 
             return ResponseEntity.ok(responseDTO);
-        } catch (DateTimeParseException ex) { 
+        } catch (DateTimeParseException ex) {
             GeneralResponseDTO<List<PriceDTO>> responseDTO = GeneralResponseDTO.<List<PriceDTO>>builder()
                 .codigo("400")
-                .message("Formato de fecha inválido. Utilice yyyy-MM-ddTHH:mm:ss.")
-                .errors(Collections.singletonList(ex.getMessage()))  
+                .message("Invalid date format. Use yyyy-MM-ddTHH:mm:ss.")
+                .errors(Collections.singletonList(ex.getMessage()))
                 .warnings(false)
                 .build();
 
@@ -59,7 +59,7 @@ public class PriceController {
         } catch (Exception ex) {
             GeneralResponseDTO<List<PriceDTO>> responseDTO = GeneralResponseDTO.<List<PriceDTO>>builder()
                     .codigo("500")
-                    .message("Error del servidor interno.")
+                    .message("Internal server error.")
                     .errors(Collections.singletonList(ex.getMessage()))
                     .warnings(false)
                     .build();

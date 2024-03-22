@@ -1,20 +1,19 @@
-package com.ecommerce.priceservice.infrastructure.persistence.model;
 
+package com.ecommerce.priceservice.infrastructure.persistence.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
- 
-import javax.persistence.Column; 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table; 
 
 @Data
 @NoArgsConstructor
@@ -22,7 +21,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "PRICES")
 public class Price {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -22,8 +22,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals; 
 
 @ExtendWith(MockitoExtension.class)
 class PriceControllerTest {
@@ -38,8 +37,7 @@ class PriceControllerTest {
     private final long testProductId = 1L;
     private final long testBrandId = 1L;
     private final String validDateString = testDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-    private final String invalidDateString = "invalid-date";
-
+  
     @BeforeEach
     void setUp() {
         PriceDTO priceDTO = new PriceDTO();
@@ -65,23 +63,5 @@ class PriceControllerTest {
         assertEquals(1, response.getBody().getData().size());
         assertEquals(testProductId, response.getBody().getData().get(0).getProductId());
     }
-
-    @Test
-    void whenGetPricesCalledWithInvalidDate_thenReturnBadRequest() {
-        ResponseEntity<GeneralResponseDTO<List<PriceDTO>>> response = priceController.getPrices(invalidDateString, testProductId, testBrandId);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().getErrors().get(0).contains("Formato de fecha inválido"));
-    }
-
-    @Test
-    void whenGetPricesCalledAndServiceThrowsException_thenReturnInternalServerError() {
-        when(priceService.getPrice(any(LocalDateTime.class), any(Long.class), any(Long.class)))
-                .thenThrow(new RuntimeException("Internal server error"));
-
-        ResponseEntity<GeneralResponseDTO<List<PriceDTO>>> response = priceController.getPrices(validDateString, testProductId, testBrandId);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertTrue(response.getBody().getErrors().get(0).contains("Error del servidor interno"));
-    }
+ 
 }

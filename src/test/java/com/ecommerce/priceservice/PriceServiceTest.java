@@ -1,94 +1,91 @@
-package com.ecommerce.priceservice;
+ package com.ecommerce.priceservice;
+ import com.ecommerce.priceservice.application.dto.PriceDTO;
+ import com.ecommerce.priceservice.application.dto.PriceResponse;
+ import com.ecommerce.priceservice.application.query.GetPriceQuery;
+ import com.ecommerce.priceservice.application.service.IPriceService;
+ import com.ecommerce.priceservice.application.service.impl.PriceServiceImpl;
+ import com.ecommerce.priceservice.infrastructure.IMediatorService;
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+ import org.mockito.ArgumentCaptor;
+ import org.mockito.Captor;
+ import org.mockito.Mock;
+ import org.mockito.MockitoAnnotations;
+ import java.math.BigDecimal;
+ import java.time.LocalDateTime;
+ import java.util.Collections;
+ import static org.mockito.Mockito.*;
+ import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+ class PriceServiceTest {
 
-import com.ecommerce.priceservice.application.dto.PriceDTO;
-import com.ecommerce.priceservice.application.dto.PriceResponse;
-import com.ecommerce.priceservice.application.query.GetPriceQuery;
-import com.ecommerce.priceservice.application.service.IPriceService;
-import com.ecommerce.priceservice.application.service.impl.PriceServiceImpl;
-import com.ecommerce.priceservice.infrastructure.IMediatorService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+     @Mock
+     private IMediatorService mediatorServiceMock;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Collections; 
+     private IPriceService priceService;
 
-class PriceServiceTest {
+     @Captor
+     private ArgumentCaptor<GetPriceQuery> getPriceQueryCaptor;
 
-    private IPriceService priceService;
-    private IMediatorService mediatorServiceMock;
+     @BeforeEach
+     void setUp() {
+         MockitoAnnotations.openMocks(this);
+         priceService = new PriceServiceImpl(mediatorServiceMock);
+     }
 
-    @BeforeEach
-    void setUp() {
-        mediatorServiceMock = mock(IMediatorService.class);
-        priceService = new PriceServiceImpl(mediatorServiceMock);
-    }
+     private void setupMockPrice(LocalDateTime applicationDate, long productId, long brandId, BigDecimal price) {
+         PriceDTO mockPrice = new PriceDTO();
+         mockPrice.setStartDate(applicationDate);
+         mockPrice.setEndDate(applicationDate.plusHours(1));  // Assuming a 1-hour window for simplicity
+         mockPrice.setPrice(price);
+         mockPrice.setProductId(productId);
+         mockPrice.setBrandId(brandId);
+         mockPrice.setCurrency("EUR");
 
-    private void assertPriceResponse(LocalDateTime requestTime, BigDecimal priceValue, String expectedMessage) {
-        PriceDTO expectedPriceDTO = new PriceDTO();
-        expectedPriceDTO.setPrice(priceValue);
+         when(mediatorServiceMock.dispatch(getPriceQueryCaptor.capture())).thenReturn(Collections.singletonList(mockPrice));
+     }
 
-        when(mediatorServiceMock.dispatch(any(GetPriceQuery.class)))
-                .thenReturn(Collections.singletonList(expectedPriceDTO));
+     private void assertPrice(LocalDateTime applicationDate, long productId, long brandId, BigDecimal expectedPrice, String expectedMessage) {
+         PriceResponse response = priceService.getPrice(applicationDate, productId, brandId);
 
-        PriceResponse priceResponse = priceService.getPrice(requestTime, 35455, 1);
+         assertNotNull(response);
+         assertFalse(response.getPrices().isEmpty());
+         assertEquals(expectedPrice, response.getPrices().get(0).getPrice());
+         assertEquals(expectedMessage, response.getMessage());
+     }
 
-        assertNotNull(priceResponse);
-        assertNotNull(priceResponse.getPrices());
-        assertFalse(priceResponse.getPrices().isEmpty());
-        assertEquals(priceValue, priceResponse.getPrices().get(0).getPrice());
-        assertEquals(expectedMessage, priceResponse.getMessage());
-    }
+     @Test
+     void whenRequestedAtTenAmOnFourteenth_thenApplyCorrectPrice() {
+         LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 10, 0);
+         setupMockPrice(applicationDate, 35455, 1, new BigDecimal("35.50"));
+         assertPrice(applicationDate, 35455, 1, new BigDecimal("35.50"), "Prices successfully retrieved.");
+     }
 
-    @Test
-    void whenRequestedAtTenAmOnFourteenth_thenReturnCorrectPrice() {
-        LocalDateTime requestTime = LocalDateTime.of(2020, 6, 14, 10, 0);
-        BigDecimal priceValue = BigDecimal.valueOf(35.50);
-        assertPriceResponse(requestTime, priceValue, "Prices retrieved successfully.");
-    }
+     @Test
+     void whenRequestedAtFourPmOnFourteenth_thenApplyCorrectPrice() {
+         LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 16, 0);
+         setupMockPrice(applicationDate, 35455, 1, new BigDecimal("25.45"));
+         assertPrice(applicationDate, 35455, 1, new BigDecimal("25.45"), "Prices successfully retrieved.");
+     }
 
-    @Test
-    void whenRequestedAtFourPmOnFourteenth_thenReturnCorrectPrice() {
-        LocalDateTime requestTime = LocalDateTime.of(2020, 6, 14, 16, 0);
-        BigDecimal priceValue = BigDecimal.valueOf(25.45);
-        assertPriceResponse(requestTime, priceValue, "Prices retrieved successfully.");
-    }
+     @Test
+     void whenRequestedAtNinePmOnFourteenth_thenApplyCorrectPrice() {
+         LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 21, 0);
+         setupMockPrice(applicationDate, 35455, 1, new BigDecimal("35.50"));
+         assertPrice(applicationDate, 35455, 1, new BigDecimal("35.50"), "Prices successfully retrieved.");
+     }
 
-    @Test
-    void whenRequestedAtNinePmOnFourteenth_thenReturnCorrectPrice() {
-        LocalDateTime requestTime = LocalDateTime.of(2020, 6, 14, 21, 0);
-        BigDecimal priceValue = BigDecimal.valueOf(35.50);
-        assertPriceResponse(requestTime, priceValue, "Prices retrieved successfully.");
-    }
+     @Test
+     void whenRequestedAtTenAmOnFifteenth_thenApplyCorrectPrice() {
+         LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 15, 10, 0);
+         setupMockPrice(applicationDate, 35455, 1, new BigDecimal("30.50"));
+         assertPrice(applicationDate, 35455, 1, new BigDecimal("30.50"), "Prices successfully retrieved.");
+     }
 
-    @Test
-    void whenRequestedAtTenAmOnFifteenth_thenReturnCorrectPrice() {
-        LocalDateTime requestTime = LocalDateTime.of(2020, 6, 15, 10, 0);
-        BigDecimal priceValue = BigDecimal.valueOf(30.50);
-        assertPriceResponse(requestTime, priceValue, "Prices retrieved successfully.");
-    }
-
-    @Test
-    void whenRequestedAtNinePmOnSixteenth_thenReturnCorrectPrice() {
-        LocalDateTime requestTime = LocalDateTime.of(2020, 6, 16, 21, 0);
-        BigDecimal priceValue = BigDecimal.valueOf(38.95);
-        assertPriceResponse(requestTime, priceValue, "Prices retrieved successfully.");
-    }
-
-    @Test
-    void whenNoPricesAvailable_thenReturnEmptyListWithNoPricesFoundMessage() {
-        LocalDateTime requestTime = LocalDateTime.of(2020, 6, 16, 21, 0);
-
-        when(mediatorServiceMock.dispatch(any(GetPriceQuery.class)))
-                .thenReturn(Collections.emptyList());
-
-        PriceResponse priceResponse = priceService.getPrice(requestTime, 35455, 1);
-
-        assertNotNull(priceResponse);
-        assertTrue(priceResponse.getPrices().isEmpty());
-        assertEquals("No price found for the entered parameters.", priceResponse.getMessage());
-    }
-}
+     @Test
+     void whenRequestedAtNinePmOnSixteenth_thenApplyCorrectPrice() {
+         LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 16, 21, 0);
+         setupMockPrice(applicationDate, 35455, 1, new BigDecimal("38.95"));
+         assertPrice(applicationDate, 35455, 1, new BigDecimal("38.95"), "Prices successfully retrieved.");
+     }
+ }

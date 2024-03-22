@@ -44,4 +44,104 @@ class PriceDTOTest {
         assertThat(priceDTO.getPrice()).isEqualTo(expectedPrice);
         assertThat(priceDTO.getCurrency()).isEqualTo(expectedCurrency);
     }
+    
+    @Test
+    void testPriceDTOWithNullValues() {
+        // Arrange
+        PriceDTO priceDTO = new PriceDTO();
+        priceDTO.setId(null);
+        priceDTO.setBrandId(null);
+        priceDTO.setStartDate(null);
+        priceDTO.setEndDate(null);
+        priceDTO.setPriceList(null);
+        priceDTO.setProductId(null);
+        priceDTO.setPriority(null);
+        priceDTO.setPrice(null);
+        priceDTO.setCurrency(null);
+
+        // Act & Assert
+        assertThat(priceDTO.getId()).isNull();
+        assertThat(priceDTO.getBrandId()).isNull();
+        assertThat(priceDTO.getStartDate()).isNull();
+        assertThat(priceDTO.getEndDate()).isNull();
+        assertThat(priceDTO.getPriceList()).isNull();
+        assertThat(priceDTO.getProductId()).isNull();
+        assertThat(priceDTO.getPriority()).isNull();
+        assertThat(priceDTO.getPrice()).isNull();
+        assertThat(priceDTO.getCurrency()).isNull();
+    }
+    
+    @Test
+    void testEquals() {
+        // Arrange
+        LocalDateTime now = LocalDateTime.now();
+        PriceDTO priceDTO1 = new PriceDTO();
+        priceDTO1.setId(1L);
+        priceDTO1.setBrandId(2L);
+        priceDTO1.setStartDate(now);
+        priceDTO1.setEndDate(now.plusDays(1));
+        priceDTO1.setPriceList(1);
+        priceDTO1.setProductId(100L);
+        priceDTO1.setPriority(10);
+        priceDTO1.setPrice(BigDecimal.valueOf(100.0));
+        priceDTO1.setCurrency("EUR");
+
+        PriceDTO priceDTO2 = new PriceDTO();
+        priceDTO2.setId(1L);
+        priceDTO2.setBrandId(2L);
+        priceDTO2.setStartDate(now);
+        priceDTO2.setEndDate(now.plusDays(1));
+        priceDTO2.setPriceList(1);
+        priceDTO2.setProductId(100L);
+        priceDTO2.setPriority(10);
+        priceDTO2.setPrice(BigDecimal.valueOf(100.0));
+        priceDTO2.setCurrency("EUR");
+
+        // Act & Assert
+        assertThat(priceDTO1).isEqualTo(priceDTO2);
+    }
+
+    @Test
+    void testHashCode() {
+        // Arrange
+        LocalDateTime now = LocalDateTime.now();
+        PriceDTO priceDTO = new PriceDTO();
+        priceDTO.setId(1L);
+        priceDTO.setBrandId(2L);
+        priceDTO.setStartDate(now);
+        priceDTO.setEndDate(now.plusDays(1));
+        priceDTO.setPriceList(1);
+        priceDTO.setProductId(100L);
+        priceDTO.setPriority(10);
+        priceDTO.setPrice(BigDecimal.valueOf(100.0));
+        priceDTO.setCurrency("EUR");
+
+        // Act
+        int hashCode = priceDTO.hashCode();
+
+        // Assert
+        assertThat(hashCode).isNotNull();
+    }
+
+    @Test
+    void testCanEqual() {
+        // Arrange
+        LocalDateTime now = LocalDateTime.now();
+        PriceDTO priceDTO = new PriceDTO();
+        priceDTO.setId(1L);
+        priceDTO.setBrandId(2L);
+        priceDTO.setStartDate(now);
+        priceDTO.setEndDate(now.plusDays(1));
+        priceDTO.setPriceList(1);
+        priceDTO.setProductId(100L);
+        priceDTO.setPriority(10);
+        priceDTO.setPrice(BigDecimal.valueOf(100.0));
+        priceDTO.setCurrency("EUR");
+
+        // Act
+        boolean canEqual = priceDTO.canEqual(new PriceDTO());
+
+        // Assert
+        assertThat(canEqual).isTrue();
+    }
 }

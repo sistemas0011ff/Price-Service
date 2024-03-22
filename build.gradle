@@ -1,50 +1,76 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.7.12'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '2.7.12' //'3.2.4'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'jacoco'
 }
 
 group = 'com.ecommerce'
-version = '0.0.1'
+version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+    sourceCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mockito:mockito-core:3.+' // Asegúrate de que tienes la versión correcta
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    // Spring Boot Starter Web para funcionalidad REST y MVC
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    // ModelMapper para mapeo objeto-objeto
     implementation 'org.modelmapper:modelmapper:2.3.8'
     implementation 'org.springdoc:springdoc-openapi-ui:1.6.8'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    
-    // Lombok para la generación de getters, setters, y otros métodos boilerplate
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    // Spring Boot Starter Validation para validación de campos en DTOs
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
     
-    // Dependencia para pruebas que involucran la web
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-web'
-    
-    // H2 Database para pruebas y desarrollo local
     runtimeOnly 'com.h2database:h2'
 
-    // Spring Boot Starter Data JPA para la persistencia de datos
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mockito:mockito-core:3.+'
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.8
+            }
+        }
+    }
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
+}
+
+tasks.named('build') {
+    dependsOn 'jacocoTestCoverageVerification'
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-parameters']
 }
